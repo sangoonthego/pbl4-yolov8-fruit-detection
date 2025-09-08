@@ -3,7 +3,7 @@ import sys
 import cv2
 from pathlib import Path
 from ultralytics import YOLO
-sys.path.append(os.path.abspath(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 model_path = None
 
