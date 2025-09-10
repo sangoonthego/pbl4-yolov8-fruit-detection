@@ -5,12 +5,9 @@ from pathlib import Path
 from ultralytics import YOLO
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-model_path = None
+model_path = "runs/detect/train1/weights/best.pt"
 
 class ObjectDetector:
-    def __init__(self):
-        pass
-
     def __init__(self, model_path=model_path, conf=0.25):
         try:
             self.model = YOLO(model_path)
@@ -19,7 +16,7 @@ class ObjectDetector:
             print(f"Error when loading model: {e}")
             self.model = None
     
-    def object_detects(self, image_path):
+    def object_detects(self, image_path, save_annotated=True):
         if self.model is None:
             return None
         
@@ -42,15 +39,10 @@ class ObjectDetector:
                 "y2": xyxy[3] 
             })
 
-        return detections
-    
-    def save_annotated_image(self, image_path, output_dir="static/output"):
-        if self.model is None:
-            return None
-        
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
-        results = self.model(image_path)
-        annotated_img = results[0].plot()
+        if save_annotated:
+            os.makedirs("static/output", exist_ok=True)
+            annotated_image = result.plot()
+            output_path = f"static/output/{os.path.basename(image_path)}"
+            cv2.imwrite(output_path, annotated_image)
 
-        output_path = Path(output_dir) / Path(image_path).name
-        cv2.imwrite(str(output_path), annotated_img)
+        return detections
