@@ -4,8 +4,12 @@ import numpy as np
 import time
 import os
 
+import subprocess
+
+subprocess.Popen(["python", "watch_snapshots.py"])
+
 # URL snapshot of ESP32-CAM
-esp_url = "http://192.168.1.21/cam-lo.jpg"
+esp_url = "http://172.20.10.4/cam-lo.jpg"
 
 save_folder = "snapshots"
 os.makedirs(save_folder, exist_ok=True) 
