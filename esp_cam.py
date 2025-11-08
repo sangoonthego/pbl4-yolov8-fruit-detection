@@ -9,7 +9,7 @@ import subprocess
 subprocess.Popen(["python", "watch_snapshots.py"])
 
 # URL snapshot of ESP32-CAM
-esp_url = "http://172.20.10.4/cam-lo.jpg"
+esp_url = "http://172.20.10.6/cam-lo.jpg"
 
 save_folder = "snapshots"
 os.makedirs(save_folder, exist_ok=True) 
@@ -37,6 +37,6 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-    time.sleep(5)
+    time.sleep(2)
 
 cv2.destroyAllWindows()
