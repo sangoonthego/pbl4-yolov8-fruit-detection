@@ -7,10 +7,10 @@ from collections import Counter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-model_path = "runs/detect/train1/weights/best.pt"
+model_path = "runs/fine_tune/esp32_optimized3/weights/best.pt"
 
 class ObjectDetector:
-    def __init__(self, model_path=model_path, conf=0.25):
+    def __init__(self, model_path=model_path, conf=0.6):
         try:
             self.model = YOLO(model_path)
             self.model.conf = conf

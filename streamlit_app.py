@@ -29,9 +29,13 @@ if uploaded_file:
             for detection in detections:
                 st.write(f"Class: {detection["class"]}")
                 st.write(f"Confidence: {detection["confidence"]:.2f}")
+                output_image_path = f"static/output/{uploaded_file.name}"
+                if os.path.exists(output_image_path):
+                    st.image(output_image_path, caption=detection["class"], use_container_width=True)
+
         else:
             st.warning("No Object Detected!!!")
 
-        output_image_path = f"static/output/{uploaded_file.name}"
-        if os.path.exists(output_image_path):
-            st.image(output_image_path, caption=detection["class"], use_container_width=True)
+        # output_image_path = f"static/output/{uploaded_file.name}"
+        # if os.path.exists(output_image_path):
+        #     st.image(output_image_path, caption=detection["class"], use_container_width=True)

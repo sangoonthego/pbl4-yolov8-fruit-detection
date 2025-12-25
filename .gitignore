@@ -1,2 +1,5 @@
 runs/
 *.pt
+
+runs/*
+!runs/detect/train1/plot
