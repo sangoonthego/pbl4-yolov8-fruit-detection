@@ -10,7 +10,7 @@ subprocess.Popen(["python", "watch_snapshots.py"])
 
 # URL snapshot of ESP32-CAM
 esp_url = "http://172.20.10.6/cam-hi.jpg"
-# esp_url = "http://192.168.1.14/cam-hi.jpg"
+# esp_url = "http://192.168.1.29/cam-hi.jpg"
 save_folder = "snapshots"
 os.makedirs(save_folder, exist_ok=True) 
 

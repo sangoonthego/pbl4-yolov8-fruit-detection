@@ -14,7 +14,7 @@ from flask_socketio import SocketIO
 # =============================
 
 snapshot_dir = "snapshots"
-BACKEND_UPLOAD_API = "https://fruitstore.loca.lt/api/upload_result"
+BACKEND_UPLOAD_API = "https://optics-habitat-wireless-longitude.trycloudflare.com/api/upload_result"
 
 detector = ObjectDetector()
 processed_files = set()
@@ -24,7 +24,7 @@ latest_weight = {
 }
 
 weight_ready = {
-    "ready": False 
+    "ready": False
 }
 
 # =============================
@@ -68,7 +68,7 @@ def handle_weight(data):
         weight = float(data.get("weight", 0))
         latest_weight["weight"] = weight
         weight_ready["ready"] = True
-        print(f"⚖ Realtime weight (Socket): {weight:.2f} kg")
+        print(f"Realtime weight (Socket): {weight:.2f} kg")
         socketio.emit("new_weight", {"weight": weight})
     except Exception as e:
         print(f"Socket weight error: {e}")
@@ -113,9 +113,9 @@ def send_to_backend(image_name, result_data):
             }
             res = requests.post(BACKEND_UPLOAD_API, files=files)
             if res.status_code == 200:
-                print("✅ Upload success")
+                print("Upload success")
             else:
-                print(f"❌ Upload failed: {res.status_code}")
+                print(f"Upload failed: {res.status_code}")
     except Exception as e:
         print(f"Upload error: {e}")
 
@@ -128,19 +128,26 @@ def process_latest_image():
         return
 
     if not weight_ready["ready"]:
-        print("⏳ Waiting for first weight...")
+        print("Waiting for first weight...")
         return
 
-    images = [f for f in os.listdir(snapshot_dir) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
+    images = [
+        f for f in os.listdir(snapshot_dir)
+        if f.lower().endswith((".jpg", ".jpeg", ".png"))
+    ]
     if not images:
         return
 
-    latest_file = max(images, key=lambda f: os.path.getmtime(os.path.join(snapshot_dir, f)))
+    latest_file = max(
+        images,
+        key=lambda f: os.path.getmtime(os.path.join(snapshot_dir, f))
+    )
+
     if latest_file in processed_files:
         return
 
     image_path = os.path.join(snapshot_dir, latest_file)
-    print(f"\n📸 Processing: {latest_file}")
+    print(f"\nProcessing: {latest_file}")
 
     try:
         result = detector.object_detects(image_path)
@@ -152,39 +159,48 @@ def process_latest_image():
         return
 
     # --------------------------------------------------------
-    # ⚡ SỬA LỖI UNKNOWN & LỌC CONFIDENCE > 0.6
+    # Filter confidence > 0.6, fix unknown class
     # --------------------------------------------------------
+
     raw_detections = result.get("detections", [])
-    
-    # Lọc danh sách (Sử dụng key "class" thay vì "label")
+
     filtered_detections = [
-        obj for obj in raw_detections 
+        obj for obj in raw_detections
         if obj.get("confidence", 0) > 0.6
     ]
-    
-    # Tính toán lại số lượng dựa trên danh sách đã lọc
+
     filtered_counts = {}
     for obj in filtered_detections:
-        class_name = obj.get("class", "unknown") # Đã sửa thành "class"
+        class_name = obj.get("class", "unknown")
         filtered_counts[class_name] = filtered_counts.get(class_name, 0) + 1
-    
-    # Cập nhật kết quả cuối cùng
+
     result["detections"] = filtered_detections
     result["counts"] = filtered_counts
-    
-    print(f"🔍 Filtered: {len(filtered_detections)} objects kept (conf > 0.6)")
+
+    print(f"Filtered: {len(filtered_detections)} objects kept (conf > 0.6)")
+
     # --------------------------------------------------------
 
     result["weight"] = latest_weight["weight"]
 
-    # Lưu JSON
+    # Save JSON
     json_path = os.path.splitext(image_path)[0] + ".json"
     try:
         with open(json_path, "w", encoding="utf-8") as jf:
             json.dump(result, jf, ensure_ascii=False, indent=4)
-        print(f"✅ JSON saved: {json_path}")
+        print(f"JSON saved: {json_path}")
     except Exception as e:
-        print(f"❌ JSON error: {e}")
+        print(f"JSON error: {e}")
+
+    # =============================
+    # BLOCK UPLOAD IF MULTI CLASS
+    # =============================
+    class_count = len(result.get("counts", {}))
+    if class_count >= 2:
+        print(f"Skip upload: detected {class_count} classes")
+        processed_files.add(latest_file)
+        print("-" * 50)
+        return
 
     send_to_backend(latest_file, result)
     processed_files.add(latest_file)
@@ -207,5 +223,11 @@ def watcher_loop():
 if __name__ == "__main__":
     t = Thread(target=watcher_loop, daemon=True)
     t.start()
-    print("🚀 Running on port 5000")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+    print("Running on port 5000")
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        debug=True,
+        use_reloader=False
+    )
