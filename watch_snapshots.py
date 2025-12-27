@@ -14,7 +14,7 @@ from flask_socketio import SocketIO
 # =============================
 
 snapshot_dir = "snapshots"
-BACKEND_UPLOAD_API = "https://optics-habitat-wireless-longitude.trycloudflare.com/api/upload_result"
+BACKEND_UPLOAD_API = "https://wrap-jefferson-volumes-encounter.trycloudflare.com/api/upload_result"
 
 detector = ObjectDetector()
 processed_files = set()
